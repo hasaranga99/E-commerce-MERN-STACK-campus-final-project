@@ -79,3 +79,15 @@ filters
   font-weight: bold;
   font-size: 20px !important;
 }
+
+/* my changes */
+
+body {
+  background-color: #b0fff81a;
+}
+
+/* body {
+  background-image: url("https://cdn.pixabay.com/photo/2017/10/25/21/39/gold-2889423_960_720.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+} */

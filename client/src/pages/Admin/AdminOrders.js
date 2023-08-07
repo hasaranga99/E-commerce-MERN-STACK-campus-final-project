@@ -5,7 +5,7 @@ import AdminMenu from "../../components/Layout/AdminMenu";
 import Layout from "../../components/Layout/Layout";
 import { useAuth } from "../../context/auth";
 import moment from "moment";
-import { Select } from "antd";
+import { Select, Button } from "antd";
 const { Option } = Select;
 
 const AdminOrders = () => {
@@ -42,6 +42,57 @@ const AdminOrders = () => {
       console.log(error);
     }
   };
+
+  const exportOrders = () => {
+    const headers = [
+      "Order ID",
+      "Status",
+      "Buyer",
+      "Date",
+      "Payment",
+      "Quantity",
+      "Product Name",
+      "Description",
+      "Price",
+    ];
+    const csvRows = orders.map((order) => {
+      const productNames = order.products
+        .map((product) => product.name)
+        .join("\n");
+      const productDescriptions = order.products
+        .map((product) => product.description.substring(0, 30))
+        .join("\n");
+      const productPrices = order.products
+        .map((product) => product.price)
+        .join("\n");
+      return [
+        order._id,
+        order.status,
+        order.buyer.name,
+        moment(order.createAt).format("YYYY-MM-DD"),
+        order.payment.success ? "Success" : "Failed",
+        order.products.length,
+        productNames,
+        productDescriptions,
+        productPrices,
+      ];
+    });
+    const csvContent = `${headers.join(",")}\n${csvRows.join("\n")}`;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "orders.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <Layout title={"All Orders Data"}>
       <div className="row dashboard">
@@ -50,6 +101,41 @@ const AdminOrders = () => {
         </div>
         <div className="col-md-9">
           <h1 className="text-center">All Orders</h1>
+
+          <button
+            onClick={exportOrders}
+            style={{
+              backgroundColor: "#007bff",
+              color: "#fff",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              border: "none",
+            }}
+          >
+            Export as CSV
+          </button>
+
+          <div
+            className="d-flex justify-content-between mb-4"
+            style={{ marginTop: "10px" }}
+          >
+            <Button
+              onClick={handlePrint}
+              style={{
+                backgroundColor: "#007bff",
+                color: "#fff",
+                padding: "10px 20px",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                transition: "background-color 0.3s ease",
+              }}
+              hover={{ backgroundColor: "#0062cc" }}
+            >
+              Print
+            </Button>
+          </div>
+
           {orders?.map((o, i) => {
             return (
               <div className="border shadow">
@@ -60,8 +146,8 @@ const AdminOrders = () => {
                       <th scope="col">Status</th>
                       <th scope="col">Buyer</th>
                       <th scope="col"> date</th>
-                      <th scope="col">Payment</th>
                       <th scope="col">Quantity</th>
+                      <th scope="col">payment</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -82,8 +168,8 @@ const AdminOrders = () => {
                       </td>
                       <td>{o?.buyer?.name}</td>
                       <td>{moment(o?.createAt).fromNow()}</td>
-                      <td>{o?.payment.success ? "Success" : "Failed"}</td>
                       <td>{o?.products?.length}</td>
+                      <td>{o?.payment.success ? "Success" : "Failed"}</td>
                     </tr>
                   </tbody>
                 </table>
